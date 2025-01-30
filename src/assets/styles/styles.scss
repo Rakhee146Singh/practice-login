@@ -15,8 +15,6 @@ body {
   inline-size: 100px;
 }
 
-.register input,
-.login input,
 .add input {
   display: block;
   border: 1px solid #6c60de;
@@ -27,18 +25,15 @@ body {
   padding-inline-start: 20px;
 }
 
-.register button,
-.login button,
-.add button {
+.addEditModal {
+  text-align: center;
+}
+
+.addEditButton {
   border: 1px solid #6c60de;
   background: #6c60de;
   block-size: 40px;
   color: #fff;
   cursor: pointer;
-  inline-size: 324px;
-}
-
-.restaurantTable {
-  display: flex;
-  justify-content: center;
+  inline-size: 196px;
 }

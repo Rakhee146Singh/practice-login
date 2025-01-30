@@ -36,7 +36,7 @@ const login = async () => {
         let result = await axios.get(`http://localhost:3000/users?email=${form.value.email}&password=${form.value.password}`);
         if (result.status === 200 && result.data.length > 0) {
             localStorage.setItem("user-info", JSON.stringify(result.data));
-            router.push('/');
+            router.push('/dashboard');
         }
         console.log(form.value.email, form.value.password);
     } catch (error) {
@@ -47,7 +47,7 @@ const login = async () => {
 onMounted(() => {
     let user = localStorage.getItem('user-info');
     if (user) {
-        router.push('/');
+        router.push('/dashboard');
     }
 });
 </script>

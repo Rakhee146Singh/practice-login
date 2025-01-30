@@ -1,17 +1,17 @@
 export default [
   {
-    title: 'Home',
-    to: { name: 'root' },
-    icon: { icon: 'tabler-smart-home' },
-  },
-  {
-    title: 'Second page',
-    to: { name: 'second-page' },
+    title: 'Dashboard',
+    to: { name: 'dashboard' },
     icon: { icon: 'tabler-file' },
   },
   {
-    title: 'Add Restaurant',
-    to: { name: 'add-restaurant' },
-    icon: { icon: 'tabler-plus' },
+    title: 'Restaurant List',
+    to: { name: 'restaurant-list' },
+    icon: { icon: 'tabler-smart-home' },
+  },
+  {
+    title: 'User List',
+    to: { name: 'user-list' },
+    icon: { icon: 'tabler-smart-home' },
   },
 ]
