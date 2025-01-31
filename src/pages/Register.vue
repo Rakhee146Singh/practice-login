@@ -9,7 +9,7 @@ import authV2MaskDark from '@images/pages/misc-mask-dark.png'
 import authV2MaskLight from '@images/pages/misc-mask-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
-import { useForm } from 'vee-validate'
+import { useField, useForm } from 'vee-validate'
 import { useRouter } from 'vue-router'
 import * as yup from 'yup'
 
@@ -20,12 +20,12 @@ const schema = yup.object({
   password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
 })
 
-const { handleSubmit, errors, defineField } = useForm({ validationSchema: schema })
+const { handleSubmit, errors } = useForm({ validationSchema: schema })
 
-const [name, nameAttrs] = defineField('name')
-const [email, emailAttrs] = defineField('email')
-const [password, passwordAttrs] = defineField('password')
-
+// Fields setup
+const { value: name, errorMessage: nameError, handleBlur: nameBlur } = useField('name')
+const { value: email, errorMessage: emailError, handleBlur: emailBlur } = useField('email')
+const { value: password, errorMessage: passwordError, handleBlur: passwordBlur } = useField('password')
 
 const isPasswordVisible = ref(false)
 const authThemeImg = useGenerateImageVariant(authV2LoginIllustrationLight, authV2LoginIllustrationDark, authV2LoginIllustrationBorderedLight, authV2LoginIllustrationBorderedDark, true)
@@ -33,7 +33,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 
 const router = useRouter()
 
-const onSubmit = handleSubmit(async values => {
+const onSubmit = handleSubmit(async (values) => {
   try {
     // Send request to create a new user
     const response = await fetch('http://localhost:3000/users', {
@@ -52,7 +52,6 @@ const onSubmit = handleSubmit(async values => {
     console.error('Registration error:', error)
   }
 })
-
 </script>
 
 <template>
@@ -91,21 +90,19 @@ const onSubmit = handleSubmit(async values => {
             <VRow>
               <!-- Name -->
               <VCol cols="12">
-                <AppTextField v-bind="nameAttrs" autofocus label="Name" type="text"
-                  placeholder="John Doe" />
-                <span class="text-error">{{ errors.name }}</span>
+                <AppTextField v-model="name" autofocus label="Name" type="text" placeholder="John Doe" />
+                <span class="text-error">{{ nameError }}</span>
               </VCol>
 
               <!-- Email -->
               <VCol cols="12">
-                <AppTextField v-bind="emailAttrs" label="Email" type="email"
-                  placeholder="johndoe@email.com" />
-                <span class="text-error">{{ errors.email }}</span>
+                <AppTextField v-model="email" label="Email" type="email" placeholder="johndoe@email.com" />
+                <span class="text-error">{{ emailError }}</span>
               </VCol>
 
               <!-- Password -->
               <VCol cols="12">
-                <AppTextField v-bind="passwordAttrs" label="Password" placeholder="············"
+                <AppTextField v-model="password" label="Password" placeholder="············"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
                   @click:append-inner="isPasswordVisible = !isPasswordVisible" />
