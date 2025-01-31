@@ -99,15 +99,22 @@ onMounted(() => {
         </VCard>
       </VDialog>
 
-      <VCardText>
+      <VCardText style="text-align: start;">
         <VDataTable :headers="[
           { title: 'ID', key: 'id' },
+          { title: 'Image', key: 'image' },
           { title: 'Name', key: 'name' },
           { title: 'Email', key: 'email' },
           { title: 'Password', key: 'password' },
           { title: 'Address', key: 'address' },
           { title: 'Actions', key: 'actions', sortable: false }
         ]" :items="user" :items-per-page="10">
+          <template #item.image="{ item }">
+            <img v-if="item.image" :src="item.image" alt="User Image" width="50" height="50"
+              style="border-radius: 50%;" />
+            <span v-else>No Image</span> <!-- Show text if no image is available -->
+          </template>
+
           <template #item.actions="{ item }">
             <div class="d-flex">
               <VBtn color="primary" @click="openEditModal(item)" variant="outlined">Update</VBtn>
