@@ -1,71 +1,61 @@
-<script>
+<script setup>
 import axios from "axios";
+import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
-export default {
-  name: "Profile",
-  data() {
-    return {
-      form: {
-        name: "",
-        address: "",
-        email: "",
-      },
-      userId: null
-    };
-  },
-  mounted() {
-    setTimeout(() => {
-      this.loadUserData(); // Load user data when component is mounted
-    }, 1000);
-  },
-  methods: {
-    // Load user data from localStorage or set from a globally available state
-    loadUserData() {
-      const savedUserData = JSON.parse(localStorage.getItem("user-info"));
-      if (savedUserData && Array.isArray(savedUserData) && savedUserData.length > 0) {
-        const user = savedUserData[0]; // Assuming there's only one user in the array
-        this.form.name = user.name;
-        this.form.email = user.email;
-        this.form.address = user.address; // Ensure address is fetched as well
-        this.userId = user.id; // Set the user ID from the array
-        console.log("User loaded from localStorage:", user);
-      } else {
-        console.error("No user data found in localStorage");
-      }
-    },
+const router = useRouter();
+const form = ref({
+  name: "",
+  address: "",
+  email: "",
+});
+const userId = ref(null);
 
-    // Method to update the user data via API
-    updateUser() {
-      if (!this.userId) {
-        console.error("User ID not found", this.userId);
-        return;
-      }
-
-      const updatedData = {
-        name: this.form.name,
-        address: this.form.address,
-        email: this.form.email
-      };
-
-      console.log("Sending update request for user ID:", this.userId);
-
-      axios
-        .put(`http://localhost:3000/users/update/${this.userId}`, updatedData)
-        .then((response) => {
-          console.log("User updated successfully", response.data);
-
-          // Save the updated data back into localStorage (wrap it in an array)
-          localStorage.setItem("user-info", JSON.stringify([response.data]));
-
-          // Reload the updated data in case any changes occurred
-          this.loadUserData();
-        })
-        .catch((error) => {
-          console.error("Error updating user", error);
-        });
-    }
+const loadUserData = () => {
+  const savedUserData = JSON.parse(localStorage.getItem("user-info"));
+  if (savedUserData && Array.isArray(savedUserData) && savedUserData.length > 0) {
+    const user = savedUserData[0];
+    form.value.name = user.name;
+    form.value.email = user.email;
+    form.value.address = user.address;
+    userId.value = user.id;
+    console.log("User loaded from localStorage:", user);
+  } else {
+    console.error("No user data found in localStorage");
   }
 };
+
+const updateUser = () => {
+  if (!userId.value) {
+    console.error("User ID not found", userId.value);
+    return;
+  }
+
+  const updatedData = {
+    name: form.value.name,
+    address: form.value.address,
+    email: form.value.email,
+  };
+
+  console.log("Sending update request for user ID:", userId.value);
+
+  axios
+    .put(`http://localhost:3000/users/${userId.value}`, updatedData)
+    .then((response) => {
+      console.log("User updated successfully", response.data);
+
+      localStorage.setItem("user-info", JSON.stringify([response.data]));
+
+      loadUserData();
+
+      router.push("dashboard");
+    })
+    .catch((error) => {
+      console.error("Error updating user", error);
+    });
+};
+
+onMounted(loadUserData);
 </script>
 
 <template>
@@ -90,7 +80,7 @@ export default {
                 <VTextField label="Email" v-model="form.email" outlined></VTextField>
               </VCol>
               <VCol cols="12" class="text-center">
-                <VBtn type="submit" color="primary" to="/dashboard">Save Changes</VBtn>
+                <VBtn type="submit" color="primary">Save Changes</VBtn>
               </VCol>
             </VRow>
           </VContainer>
