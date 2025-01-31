@@ -53,10 +53,22 @@ watch(
 // In saveData(), map addressTemp to address correctly before sending to the server
 const saveData = async () => {
   try {
-    // Before sending data to the API, make sure to map addressTemp to address
+    // **Trigger validation** before saving data
+    const schema = props.formType === "Restaurant" ? restaurantSchema : userSchema;
+    try {
+      await schema.validate(form.value, { abortEarly: false });
+    } catch (validationError) {
+      // Collect and set the validation errors
+      errors.value = validationError.inner.reduce((acc, error) => {
+        acc[error.path] = error.message;
+        return acc;
+      }, {});
+      return; // Prevent submission if validation fails
+    }
+
+    // Proceed with API request if validation is successful
     const dataToSend = { ...form.value, address: form.value.addressTemp };
 
-    // Make the API request accordingly
     const url = props.formType === "Restaurant"
       ? "http://localhost:3000/restaurants"
       : "http://localhost:3000/users";
