@@ -98,47 +98,27 @@ onMounted(() => {
       <VCardText>Hello {{ name }}, Welcome to the Restaurant List Page</VCardText>
 
       <div class="addButton">
-        <VBtn @click="openAddModal" color="success" variant="outlined"
-          >Add Restaurant</VBtn
-        >
+        <VBtn @click="openAddModal" color="success" variant="outlined">Add Restaurant</VBtn>
       </div>
 
       <VDialog v-model="dialog" max-width="600px">
         <VCard>
-          <AddRestaurant
-            :restaurantData="selectedRestaurant"
-            :isEdit="isEdit"
-            :formType="'Restaurant'"
-            @dataUpdated="updateRestaurantList"
-          />
+          <AddRestaurant :restaurantData="selectedRestaurant" :isEdit="isEdit" :formType="'Restaurant'"
+            @dataUpdated="updateRestaurantList" />
         </VCard>
       </VDialog>
 
-      <VCardText>
-        <VDataTable
-          :headers="[
-            { title: 'ID', key: 'id' },
-            { title: 'Name', key: 'name' },
-            { title: 'Contact', key: 'contact' },
-            { title: 'Address', key: 'address' },
-            { title: 'Actions', key: 'actions', sortable: false },
-          ]"
-          :items="restaurant"
-          :items-per-page="10"
-        >
+      <VCardText style="text-align: start;">
+        <VDataTable :headers="[
+          { title: 'ID', key: 'id' },
+          { title: 'Name', key: 'name' },
+          { title: 'Contact', key: 'contact' },
+          { title: 'Address', key: 'address' },
+          { title: 'Actions', key: 'actions', sortable: false },
+        ]" :items="restaurant" :items-per-page="10">
           <template #item.actions="{ item }">
-            <VBtn
-              color="primary"
-              @click="openEditModal(item)"
-              variant="outlined"
-              >Update</VBtn
-            >
-            <VBtn
-              color="error"
-              @click="deleteRestaurant(item.id)"
-              style="margin-inline-start: 6px"
-              variant="outlined"
-            >
+            <VBtn color="primary" @click="openEditModal(item)" variant="outlined">Update</VBtn>
+            <VBtn color="error" @click="deleteRestaurant(item.id)" style="margin-inline-start: 6px;" variant="outlined">
               Delete
             </VBtn>
           </template>
@@ -157,6 +137,6 @@ td {
 .addButton {
   display: flex;
   justify-content: end;
-  margin-inline-end: 70px;
+  margin-inline-end: 92px;
 }
 </style>

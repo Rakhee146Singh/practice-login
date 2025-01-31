@@ -10,9 +10,12 @@ import authV2MaskLight from '@images/pages/misc-mask-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
 import axios from 'axios'
+import { useForm } from 'vee-validate'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import * as yup from 'yup'
 
+// Define Page Metadata
 definePage({
   meta: {
     layout: 'blank',
@@ -20,36 +23,48 @@ definePage({
   },
 })
 
-const form = ref({
-  email: '',
-  password: '',
-  remember: false,
+// Define validation schema
+const schema = yup.object({
+  email: yup.string().required('Email is required').email('Invalid email format'),
+  password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
 })
+
+// Initialize form validation
+const { handleSubmit, errors, defineField } = useForm({
+  validationSchema: schema,
+})
+
+const [email, emailAttrs] = defineField('email')
+const [password, passwordAttrs] = defineField('password')
+
+// Define `remember` separately since it's not part of validation
+const remember = ref(false)
 
 const isPasswordVisible = ref(false)
 const authThemeImg = useGenerateImageVariant(authV2LoginIllustrationLight, authV2LoginIllustrationDark, authV2LoginIllustrationBorderedLight, authV2LoginIllustrationBorderedDark, true)
 const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
-const router = useRouter();
+const router = useRouter()
 
-const login = async () => {
-    try {
-        let result = await axios.get(`http://localhost:3000/users?email=${form.value.email}&password=${form.value.password}`);
-        if (result.status === 200 && result.data.length > 0) {
-            localStorage.setItem("user-info", JSON.stringify(result.data));
-            router.push('/dashboard');
-        }
-        console.log(form.value.email, form.value.password);
-    } catch (error) {
-        console.error('Error logging in', error);
+// Login function
+const login = handleSubmit(async values => {
+  try {
+    let result = await axios.get(`http://localhost:3000/users?email=${values.email}&password=${values.password}`)
+    if (result.status === 200 && result.data.length > 0) {
+      localStorage.setItem("user-info", JSON.stringify(result.data))
+      router.push('/dashboard')
     }
-};
+  } catch (error) {
+    console.error('Error logging in', error)
+  }
+})
 
+// Redirect if already logged in
 onMounted(() => {
-    let user = localStorage.getItem('user-info');
-    if (user) {
-        router.push('/dashboard');
-    }
-});
+  let user = localStorage.getItem('user-info')
+  if (user) {
+    router.push('/dashboard')
+  }
+})
 </script>
 
 <template>
@@ -62,46 +77,19 @@ onMounted(() => {
     </div>
   </a>
 
-  <VRow
-    no-gutters
-    class="auth-wrapper bg-surface"
-  >
-    <VCol
-      md="8"
-      class="d-none d-md-flex"
-    >
+  <VRow no-gutters class="auth-wrapper bg-surface">
+    <VCol md="8" class="d-none d-md-flex">
       <div class="position-relative bg-background w-100 me-0">
-        <div
-          class="d-flex align-center justify-center w-100 h-100"
-          style="padding-inline: 6.25rem;"
-        >
-          <VImg
-            max-width="613"
-            :src="authThemeImg"
-            class="auth-illustration mt-16 mb-2"
-          />
+        <div class="d-flex align-center justify-center w-100 h-100" style="padding-inline: 6.25rem;">
+          <VImg max-width="613" :src="authThemeImg" class="auth-illustration mt-16 mb-2" />
         </div>
 
-        <img
-          class="auth-footer-mask flip-in-rtl"
-          :src="authThemeMask"
-          alt="auth-footer-mask"
-          height="280"
-          width="100"
-        >
+        <img class="auth-footer-mask flip-in-rtl" :src="authThemeMask" alt="auth-footer-mask" height="280" width="100">
       </div>
     </VCol>
 
-    <VCol
-      cols="12"
-      md="4"
-      class="auth-card-v2 d-flex align-center justify-center"
-    >
-      <VCard
-        flat
-        :max-width="500"
-        class="mt-12 mt-sm-0 pa-6"
-      >
+    <VCol cols="12" md="4" class="auth-card-v2 d-flex align-center justify-center">
+      <VCard flat :max-width="500" class="mt-12 mt-sm-0 pa-6">
         <VCardText>
           <h4 class="text-h4 mb-1">
             Welcome to <span class="text-capitalize">{{ themeConfig.app.title }}</span>! 👋🏻
@@ -110,48 +98,38 @@ onMounted(() => {
             Please sign-in to your account and start the adventure
           </p>
         </VCardText>
+
         <VCardText>
           <VForm @submit.prevent="login">
             <VRow>
+              <!-- Email -->
               <VCol cols="12">
-                <AppTextField
-                  v-model="form.email"
-                  autofocus
-                  label="Email or Username"
-                  type="email"
-                  placeholder="johndoe@email.com"
-                />
+                <AppTextField v-model="email" v-bind="emailAttrs" autofocus label="Email or Username" type="email"
+                  placeholder="johndoe@email.com" />
+                <span class="text-error">{{ errors.email }}</span>
               </VCol>
 
+              <!-- Password -->
               <VCol cols="12">
-                <AppTextField
-                  v-model="form.password"
-                  label="Password"
-                  placeholder="············"
+                <AppTextField v-model="password" v-bind="passwordAttrs" label="Password" placeholder="············"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
-                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
-                />
+                  @click:append-inner="isPasswordVisible = !isPasswordVisible" />
+                <span class="text-error">{{ errors.password }}</span>
 
                 <div class="d-flex align-center flex-wrap justify-space-between my-6">
-                  <VCheckbox
-                    v-model="form.remember"
-                    label="Remember me"
-                  />
-                  <a
-                    class="text-primary"
-                    href="javascript:void(0)"
-                  >
+                  <VCheckbox v-model="remember" label="Remember me" />
+                  <a class="text-primary" href="javascript:void(0)">
                     Forgot Password?
                   </a>
                 </div>
 
-                <VBtn block type="submit"
-                @click="login">
+                <VBtn block type="submit">
                   Login
                 </VBtn>
               </VCol>
 
+              <!-- Create Account -->
               <VCol cols="12" class="text-body-1 text-center">
                 <span class="d-inline-block">New on our platform?</span>
                 <a class="text-primary ms-1 d-inline-block text-body-1" href="/register">
@@ -165,6 +143,7 @@ onMounted(() => {
                 <VDivider />
               </VCol>
 
+              <!-- Auth Providers -->
               <VCol cols="12" class="text-center">
                 <AuthProvider />
               </VCol>

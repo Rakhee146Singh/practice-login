@@ -9,30 +9,50 @@ import authV2MaskDark from '@images/pages/misc-mask-dark.png'
 import authV2MaskLight from '@images/pages/misc-mask-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
+import { useForm } from 'vee-validate'
 import { useRouter } from 'vue-router'
+import * as yup from 'yup'
 
-definePage({
-  meta: {
-    layout: 'blank',
-    public: true,
-  },
+// Define validation schema
+const schema = yup.object({
+  name: yup.string().required('Name is required').min(3, 'Name must be at least 3 characters'),
+  email: yup.string().required('Email is required').email('Invalid email format'),
+  password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
 })
 
-const form = ref({
-  email: '',
-  password: '',
-  remember: false,
-})
+const { handleSubmit, errors, defineField } = useForm({ validationSchema: schema })
+
+const [name, nameAttrs] = defineField('name')
+const [email, emailAttrs] = defineField('email')
+const [password, passwordAttrs] = defineField('password')
+
 
 const isPasswordVisible = ref(false)
 const authThemeImg = useGenerateImageVariant(authV2LoginIllustrationLight, authV2LoginIllustrationDark, authV2LoginIllustrationBorderedLight, authV2LoginIllustrationBorderedDark, true)
 const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 
-const router = useRouter();
+const router = useRouter()
 
-function register() {
-  router.push('/login');
-}
+const onSubmit = handleSubmit(async values => {
+  try {
+    // Send request to create a new user
+    const response = await fetch('http://localhost:3000/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(values),
+    })
+
+    if (!response.ok) {
+      throw new Error('User registration failed')
+    }
+
+    // Redirect to /users after successful registration
+    router.push('/login')
+  } catch (error) {
+    console.error('Registration error:', error)
+  }
+})
+
 </script>
 
 <template>
@@ -45,46 +65,19 @@ function register() {
     </div>
   </a>
 
-  <VRow
-    no-gutters
-    class="auth-wrapper bg-surface"
-  >
-    <VCol
-      md="8"
-      class="d-none d-md-flex"
-    >
+  <VRow no-gutters class="auth-wrapper bg-surface">
+    <VCol md="8" class="d-none d-md-flex">
       <div class="position-relative bg-background w-100 me-0">
-        <div
-          class="d-flex align-center justify-center w-100 h-100"
-          style="padding-inline: 6.25rem;"
-        >
-          <VImg
-            max-width="613"
-            :src="authThemeImg"
-            class="auth-illustration mt-16 mb-2"
-          />
+        <div class="d-flex align-center justify-center w-100 h-100" style="padding-inline: 6.25rem;">
+          <VImg max-width="613" :src="authThemeImg" class="auth-illustration mt-16 mb-2" />
         </div>
 
-        <img
-          class="auth-footer-mask flip-in-rtl"
-          :src="authThemeMask"
-          alt="auth-footer-mask"
-          height="280"
-          width="100"
-        >
+        <img class="auth-footer-mask flip-in-rtl" :src="authThemeMask" alt="auth-footer-mask" height="280" width="100">
       </div>
     </VCol>
 
-    <VCol
-      cols="12"
-      md="4"
-      class="auth-card-v2 d-flex align-center justify-center"
-    >
-      <VCard
-        flat
-        :max-width="500"
-        class="mt-12 mt-sm-0 pa-6"
-      >
+    <VCol cols="12" md="4" class="auth-card-v2 d-flex align-center justify-center">
+      <VCard flat :max-width="500" class="mt-12 mt-sm-0 pa-6">
         <VCardText>
           <h4 class="text-h4 mb-1">
             Welcome to <span class="text-capitalize">{{ themeConfig.app.title }}</span>! 👋🏻
@@ -94,82 +87,54 @@ function register() {
           </p>
         </VCardText>
         <VCardText>
-          <VForm @submit.prevent="() => {}">
+          <VForm @submit.prevent="onSubmit">
             <VRow>
-              <!-- name -->
+              <!-- Name -->
               <VCol cols="12">
-                <AppTextField
-                  v-model="form.name"
-                  autofocus
-                  label="Name"
-                  type="name"
-                  placeholder="John Doe"
-                />
+                <AppTextField v-bind="nameAttrs" autofocus label="Name" type="text"
+                  placeholder="John Doe" />
+                <span class="text-error">{{ errors.name }}</span>
               </VCol>
 
-              <!-- email -->
+              <!-- Email -->
               <VCol cols="12">
-                <AppTextField
-                  v-model="form.email"
-                  autofocus
-                  label="Email"
-                  type="email"
-                  placeholder="johndoe@email.com"
-                />
+                <AppTextField v-bind="emailAttrs" label="Email" type="email"
+                  placeholder="johndoe@email.com" />
+                <span class="text-error">{{ errors.email }}</span>
               </VCol>
 
-              <!-- password -->
+              <!-- Password -->
               <VCol cols="12">
-                <AppTextField
-                  v-model="form.password"
-                  label="Password"
-                  placeholder="············"
+                <AppTextField v-bind="passwordAttrs" label="Password" placeholder="············"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'"
-                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
-                />
-
+                  @click:append-inner="isPasswordVisible = !isPasswordVisible" />
+                <span class="text-error">{{ errors.password }}</span>
                 <div class="d-flex align-center flex-wrap my-6">
-                  <VBtn
-                  block
-                    type="submit"
-                    @click="register"
-                  >
+                  <VBtn block type="submit">
                     Register
                   </VBtn>
                 </div>
               </VCol>
 
               <!-- create account -->
-              <VCol
-                cols="12"
-                class="text-body-1 text-center"
-              >
+              <VCol cols="12" class="text-body-1 text-center">
                 <span class="d-inline-block">
                   Already have an account?
                 </span>
-                <a
-                  class="text-primary ms-1 d-inline-block text-body-1"
-                  href="/login"
-                >
+                <a class="text-primary ms-1 d-inline-block text-body-1" href="/login">
                   Login
                 </a>
               </VCol>
 
-              <VCol
-                cols="12"
-                class="d-flex align-center"
-              >
+              <VCol cols="12" class="d-flex align-center">
                 <VDivider />
                 <span class="mx-4">or</span>
                 <VDivider />
               </VCol>
 
               <!-- auth providers -->
-              <VCol
-                cols="12"
-                class="text-center"
-              >
+              <VCol cols="12" class="text-center">
                 <AuthProvider />
               </VCol>
             </VRow>

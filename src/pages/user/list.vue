@@ -37,7 +37,6 @@ const loadData = async () => {
   }
 };
 
-
 // **Delete user**
 const deleteUser = async (id) => {
   try {
@@ -72,10 +71,10 @@ const openAddModal = () => {
   dialog.value = true;
 };
 
-// **Open Modal for Updating**
+// Update 'selectedUser' when opening edit modal
 const openEditModal = (item) => {
   isEdit.value = true;
-  selectedUser.value = { ...item };
+  selectedUser.value = { ...item, addressTemp: item.address };  // Make sure to add addressTemp
   dialog.value = true;
 };
 
@@ -96,12 +95,7 @@ onMounted(() => {
 
       <VDialog v-model="dialog" max-width="600px">
         <VCard>
-          <AddRestaurant
-            :userData="selectedUser"
-            :isEdit="isEdit"
-            :formType="'User'"
-            @dataUpdated="updateUserList"
-          />
+          <AddRestaurant :userData="selectedUser" :isEdit="isEdit" :formType="'User'" @dataUpdated="updateUserList" />
         </VCard>
       </VDialog>
 
@@ -111,13 +105,16 @@ onMounted(() => {
           { title: 'Name', key: 'name' },
           { title: 'Email', key: 'email' },
           { title: 'Password', key: 'password' },
+          { title: 'Address', key: 'address' },
           { title: 'Actions', key: 'actions', sortable: false }
         ]" :items="user" :items-per-page="10">
           <template #item.actions="{ item }">
-            <VBtn color="primary" @click="openEditModal(item)" variant="outlined">Update</VBtn>
-            <VBtn color="error" @click="deleteUser(item.id)" style="margin-inline-start: 6px;" variant="outlined">
-              Delete
-            </VBtn>
+            <div class="d-flex">
+              <VBtn color="primary" @click="openEditModal(item)" variant="outlined">Update</VBtn>
+              <VBtn color="error" @click="deleteUser(item.id)" style="margin-inline-start: 6px;" variant="outlined">
+                Delete
+              </VBtn>
+            </div>
           </template>
         </VDataTable>
       </VCardText>
@@ -134,6 +131,6 @@ td {
 .addButton {
   display: flex;
   justify-content: end;
-  margin-inline-end: 70px;
+  margin-inline-end: 116px;
 }
 </style>
