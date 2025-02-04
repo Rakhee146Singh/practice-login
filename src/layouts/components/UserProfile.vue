@@ -62,7 +62,7 @@ onMounted(loadUserData);
           </VListItem>
 
           <!-- 👉 Settings -->
-          <VListItem link>
+          <VListItem link to="/settings">
             <template #prepend>
               <VIcon class="me-2" icon="tabler-settings" size="22" />
             </template>

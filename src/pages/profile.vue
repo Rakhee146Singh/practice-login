@@ -52,12 +52,19 @@ const updateUser = () => {
 
   console.log("Sending update request for user ID:", userId.value);
 
-  axios
-    .put(`http://localhost:3000/users/${userId.value}`, updatedData)
+  axios.put(`http://localhost:3000/users/${userId.value}`, updatedData)
     .then((response) => {
       console.log("User updated successfully", response.data);
 
-      localStorage.setItem("user-info", JSON.stringify([response.data]));
+      // Store only necessary user details
+      const userInfo = {
+        id: response.data.id,
+        name: response.data.name,
+        email: response.data.email,
+        address: response.data.address
+      };
+
+      localStorage.setItem("user-info", JSON.stringify([userInfo]));
 
       loadUserData();
 
